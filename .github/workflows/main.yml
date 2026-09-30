@@ -1,0 +1,45 @@
+name: Temporary SSH VM
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ssh-vm:
+    name: Start Temporary Ubuntu VM
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+
+    steps:
+      - name: Setup SSH session through Bore
+        id: ssh
+        uses: lexbritvin/ssh-session-action@v1
+        with:
+          use-bore: 'true'
+          use-actor-ssh-keys: 'true'
+          ssh-server-authorized-keys: |
+            ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKZ4FsJrSGzKftLsTtaqC/VwMdSQH9RKZChIUwnxO0ln termux
+          detached: 'true'
+          wait-timeout: '18000'
+
+      - name: Print SSH connection details
+        run: |
+          echo "========================================="
+          echo "SSH CONNECTION DETAILS"
+          echo "========================================="
+          echo "${{ steps.ssh.outputs.help-message }}"
+          echo "SSH command: ${{ steps.ssh.outputs.ssh-command }}"
+          echo "Host: ${{ steps.ssh.outputs.ssh-host }}"
+          echo "Port: ${{ steps.ssh.outputs.ssh-port }}"
+          echo "User: ${{ steps.ssh.outputs.ssh-user }}"
+          echo "========================================="
+
+      - name: Keep VM alive
+        shell: bash
+        run: |
+          while true; do
+            echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] VM is alive"
+            sleep 60
+          done
